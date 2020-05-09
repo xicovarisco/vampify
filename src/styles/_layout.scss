@@ -1,0 +1,27 @@
+@import "src/styles/_defines";
+
+.flexCenter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.subtitle {
+    color: $grey;
+}
+
+.m0 {
+    margin: 0;
+}
+
+.mleft5 {
+    margin-left: 5px;
+}
+
+.mright15 {
+    margin-right: 15px;
+}
+
+.mtop30 {
+    margin-top: 30px;
+}
