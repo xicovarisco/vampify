@@ -8,17 +8,17 @@ import CardMedia from '@material-ui/core/CardMedia';
 // Styles
 import './view.scss';
 
-const CardComponent = () => {
+const CardComponent = (props) => {
+    const { image, name, description } = props;
     return (
         <Card className="cardComponent">
             <CardMedia
                 className="cardMedia"
-                image="https://source.unsplash.com/random"
-                title="Image title"
+                image={image}
             />
             <CardContent className="cardContent">
-                <h2>Heading</h2>
-                <p>This is a media card. You can use this section to describe the content.</p>
+                <h2>{name}</h2>
+                <p>{description}</p>
             </CardContent>
             <CardActions>
                 <Button size="small" color="primary">
