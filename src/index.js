@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
-import { Header, Footer } from './components/common';
 import App from './components/App/App';
 
 // Main Styles
@@ -18,9 +17,7 @@ const theme = createMuiTheme({
 ReactDOM.render(
   <React.StrictMode>
       <ThemeProvider theme={theme}>
-        <Header />
         <App />
-        <Footer />
       </ThemeProvider>
   </React.StrictMode>,
   document.getElementById('root')
