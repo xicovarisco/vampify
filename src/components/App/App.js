@@ -9,7 +9,8 @@ import {
   CardComponent,
   Header,
   Footer,
-  SnackbarComponent
+  SnackbarComponent,
+  DialogComponent
 } from '../common';
 import { utils } from '../lib/utils';
 import { playlistUtils } from '../lib/playlists';
@@ -25,6 +26,7 @@ export default function App() {
   const [searchedSongs, setSearchedSongs] = useState([]);
   const [savedSongs, setSavedSongs] = useState([]);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
   const spotify = new Spotify();
 
   useEffect(() => {
@@ -55,6 +57,12 @@ export default function App() {
         });
   };
 
+  const onResetState = () => {
+    setSearchedSongs([]);
+    setSavedSongs([]);
+    onPullPlaylists(accessToken);
+  };
+
   // Render items in an appropriate grid
   const renderItems = ({ items, type }) => {
     if (accessToken && _.size(items) === 0) return <CircularProgress />;
@@ -65,7 +73,8 @@ export default function App() {
           id: item.id,
           name: item.name,
           image: itemImage,
-          description: item.description
+          description: item.description,
+          uri: item.uri
         };
         if (type === 'search') {
           cardArgs.onAddToSavedPlaylist = (songsSelected) => {
@@ -154,6 +163,7 @@ export default function App() {
             <Button
               variant="contained"
               color="primary"
+              onClick={() => setOpenDialog(true)}
             >
               Save to Spotify
             </Button>
@@ -175,6 +185,30 @@ export default function App() {
           open={!!snackbarMessage}
           message={snackbarMessage}
           onClose={() => setSnackbarMessage('')}
+        />
+        <DialogComponent
+          open={openDialog}
+          onClose={() => setOpenDialog(false)}
+          title="Add to Playlist"
+          description="What should be the playlist&apos;s name?"
+          inputPlaceholder="Playlist name"
+          onConfirm={async (name) => {
+            setOpenDialog(false);
+            // Get current connected user
+            const user = await spotify.getMe();
+            // Creates a playlist
+            const playlistCreated = await spotify.createPlaylist(_.get(user, 'id'), { name });
+            // Add songs to playlist
+            // Creates a comma separate variable to hold all the URI's to add to a playlist
+            const uris = _.map(savedSongs, (song) => song.uri);
+            await spotify.addTracksToPlaylist(_.get(playlistCreated, 'id'), uris);
+
+            // Show Snackbar
+            setSnackbarMessage(`Playlist ${name} created successfully`);
+
+            // Reset State
+            onResetState();
+          }}
         />
       </div>
       <Footer />
