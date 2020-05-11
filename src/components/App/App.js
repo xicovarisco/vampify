@@ -35,6 +35,8 @@ export default function App() {
     if (hash && hash.access_token) {
       setAccessToken(hash.access_token);
       onPullPlaylists(hash.access_token);
+    } else {
+      setIsTokenExpired(true);
     }
   }, []);
 
