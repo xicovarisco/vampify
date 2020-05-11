@@ -1,13 +1,21 @@
 .appComponent {
     .heroContainer {
-        padding: 8rem 0 4rem 0;
+        padding-top: 8rem;
     }
-    .playlists {
+    .itemsGrid {
+        h1 {
+            margin: 5rem 0 3rem 0;
+        }
+    }
+    .savedSongsContainer {
+        margin-top: 4rem;
+        .titleContainer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
         h1 {
             margin-bottom: 3rem;
         }
-    }
-    .savedPlaylists {
-        margin-top: 4rem;
     }
 }

@@ -10,7 +10,13 @@ import _ from 'lodash';
 import './view.scss';
 
 const CardComponent = (props) => {
-    const { image, name, description } = props;
+    const {
+        image,
+        name,
+        description,
+        onAddToSavedPlaylist
+    } = props;
+
     return (
         <Card className="cardComponent">
             <CardMedia
@@ -21,15 +27,17 @@ const CardComponent = (props) => {
                 <h2>{name}</h2>
                 <p>{description}</p>
             </CardContent>
-            <CardActions>
-                <Button
-                    size="small"
-                    color="primary"
-                    onClick={() => props.onAddToSavedPlaylist({ ..._.omit(props, ['onAddToSavedPlaylist']) })}
-                >
-                    Add to playlist
-                </Button>
-            </CardActions>
+            {onAddToSavedPlaylist && (
+                <CardActions>
+                    <Button
+                        size="small"
+                        color="primary"
+                        onClick={() => props.onAddToSavedPlaylist({ ..._.omit(props, ['onAddToSavedPlaylist']) })}
+                    >
+                        Add to playlist
+                    </Button>
+                </CardActions>
+            )}
         </Card>
     );
 };

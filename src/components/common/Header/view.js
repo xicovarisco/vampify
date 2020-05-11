@@ -10,6 +10,8 @@ import _ from 'lodash';
 import './view.scss';
 
 const Header = (props) => {
+    const { isDisabled } = props;
+
     const onChangeSearch = _.debounce((event) => {
         if (props.onSearchPlaylist) props.onSearchPlaylist(event);
     }, 1000);
@@ -27,8 +29,8 @@ const Header = (props) => {
                             <SearchIcon style={{ color: '#6C2EFF' }} />
                         </div>
                         <InputBase
-                            disabled={props.isDisabled}
-                            placeholder="Search…"
+                            disabled={isDisabled}
+                            placeholder="Search songs…"
                             classes={{
                                 root: 'inputRoot',
                                 input: 'inputNormal',

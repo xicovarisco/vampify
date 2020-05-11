@@ -12,6 +12,8 @@ import {
   SnackbarComponent
 } from '../common';
 import { utils } from '../lib/utils';
+import { playlistUtils } from '../lib/playlists';
+import { songUtils } from '../lib/songs';
 
 // Styles
 import './App.scss';
@@ -20,8 +22,8 @@ export default function App() {
   const [accessToken, setAccessToken] = useState();
   const [isTokenExpired, setIsTokenExpired] = useState(false);
   const [userPlaylists, setUserPlaylists] = useState([]);
-  const [searchedPlaylists, setSearchedPlaylists] = useState([]);
-  const [savedPlaylists, setSavedPlaylists] = useState([]);
+  const [searchedSongs, setSearchedSongs] = useState([]);
+  const [savedSongs, setSavedSongs] = useState([]);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const spotify = new Spotify();
 
@@ -53,37 +55,48 @@ export default function App() {
         });
   };
 
-  const renderPlaylists = (playlistsToRender) => {
-    if (accessToken && playlistsToRender.length === 0) return <CircularProgress />;
+  // Render items in an appropriate grid
+  const renderItems = ({ items, type }) => {
+    if (accessToken && _.size(items) === 0) return <CircularProgress />;
     return (
-      playlistsToRender.map((playlist) => {
-        const playlistImage = _.get(playlist, 'image') || _.get(playlist, 'images[0].url');
+      _.map(items, (item) => {
+        const itemImage = type === 'search' ? songUtils.getImage(item) : playlistUtils.getImage(item);
+        const cardArgs = {
+          id: item.id,
+          name: item.name,
+          image: itemImage,
+          description: item.description
+        };
+        if (type === 'search') {
+          cardArgs.onAddToSavedPlaylist = (songsSelected) => {
+            setSavedSongs(savedSongs.concat(songsSelected));
+            setSnackbarMessage(`Song ${_.get(songsSelected, 'name')} saved`);
+          };
+        }
         return (
-          <Grid item key={playlist.id} xs={12} sm={6} md={4}>
-            <CardComponent
-              id={playlist.id}
-              name={playlist.name}
-              image={playlistImage}
-              description={playlist.description}
-              onAddToSavedPlaylist={(playlistSelected) => {
-                setSavedPlaylists(savedPlaylists.concat(playlistSelected));
-                setSnackbarMessage(`Playlist ${_.get(playlistSelected, 'name')} saved`);
-              }}
-            />
+          <Grid item key={item.id} xs={12} sm={6} md={4}>
+            <CardComponent {...cardArgs} />
           </Grid>
         );
       })
     );
   };
 
-  const renderSpotifyPlaylists = () => {
-    const hasSearchedPlaylists = _.size(searchedPlaylists) > 0;
-    const playlistsToRender = hasSearchedPlaylists ? searchedPlaylists : userPlaylists;
+  const renderGrid = ({
+    title,
+    className,
+    items,
+    type,
+    btnAction
+  }) => {
     return (
-      <Container maxWidth="md" className="playlists">
-        <h1>{hasSearchedPlaylists ? 'Searched Playlists' : 'User playlists'}</h1>
+      <Container maxWidth="md" className={`itemsGrid ${className}`}>
+        <div className="titleContainer">
+          <h1>{title}</h1>
+          {btnAction}
+        </div>
         <Grid container spacing={4}>
-          {renderPlaylists(playlistsToRender)}
+          {renderItems({ items, type })}
         </Grid>
       </Container>
     );
@@ -95,14 +108,14 @@ export default function App() {
         isDisabled={isTokenExpired}
         onSearchPlaylist={(value) => {
           if (value) {
-            spotify.searchPlaylists(value, { limit: 5 })
+            spotify.searchTracks(value, { limit: 5 })
               .then((response) => {
-                if (_.size(response, 'playlists.items') > 0) {
-                  setSearchedPlaylists(response.playlists.items);
+                if (_.size(response, 'tracks.items') > 0) {
+                  setSearchedSongs(response.tracks.items);
                 }
               });
           } else {
-            setSearchedPlaylists([]);
+            setSearchedSongs([]);
           }
         }}
       />
@@ -113,7 +126,7 @@ export default function App() {
               Vampify <span className="mleft5" role="img" aria-label="a">✌️</span>
             </h1>
             <h5>
-              Vampify allows you to easily search and add new playlists to your own Spotify account
+              Vampify allows you to easily search for songs and add them to a new playlist on Spotify
             </h5>
             <div className="mtop30">
               {isTokenExpired && (
@@ -132,15 +145,32 @@ export default function App() {
             </div>
           </Container>
         </div>
-        {!isTokenExpired && renderSpotifyPlaylists()}
-        {_.size(savedPlaylists) > 0 && (
-          <Container maxWidth="md" className="savedPlaylists">
-            <h1>Saved Playlists</h1>
-            <Grid container spacing={4}>
-              {renderPlaylists(savedPlaylists)}
-            </Grid>
-          </Container>
-        )}
+        {!isTokenExpired && _.size(savedSongs) > 0 && renderGrid({
+          title: 'Saved Songs',
+          className: 'savedSongsContainer',
+          items: savedSongs,
+          type: 'savedSongs',
+          btnAction: (
+            <Button
+              variant="contained"
+              color="primary"
+            >
+              Save to Spotify
+            </Button>
+          )
+        })}
+        {!isTokenExpired && _.size(searchedSongs) > 0 && renderGrid({
+          title: 'Search Results',
+          className: 'searchContainer',
+          items: searchedSongs,
+          type: 'search'
+        })}
+        {!isTokenExpired && _.size(userPlaylists) > 0 && renderGrid({
+          title: 'User playlists',
+          className: 'playlists',
+          items: userPlaylists,
+          type: 'userPlaylists'
+        })}
         <SnackbarComponent
           open={!!snackbarMessage}
           message={snackbarMessage}
