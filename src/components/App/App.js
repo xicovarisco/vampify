@@ -5,7 +5,12 @@ import Container from '@material-ui/core/Container';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Spotify from 'spotify-web-api-js';
 import _ from 'lodash';
-import { CardComponent, Header, Footer } from '../common';
+import {
+  CardComponent,
+  Header,
+  Footer,
+  SnackbarComponent
+} from '../common';
 import { utils } from '../lib/utils';
 
 // Styles
@@ -16,6 +21,8 @@ export default function App() {
   const [isTokenExpired, setIsTokenExpired] = useState(false);
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [searchedPlaylists, setSearchedPlaylists] = useState([]);
+  const [savedPlaylists, setSavedPlaylists] = useState([]);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const spotify = new Spotify();
 
   useEffect(() => {
@@ -46,22 +53,39 @@ export default function App() {
         });
   };
 
-  const renderPlaylists = () => {
-    let playlistToRender = userPlaylists;
-    if (_.size(searchedPlaylists) > 0) {
-      playlistToRender = searchedPlaylists;
-    }
-    if (accessToken && playlistToRender.length === 0) return <CircularProgress />;
+  const renderPlaylists = (playlistsToRender) => {
+    if (accessToken && playlistsToRender.length === 0) return <CircularProgress />;
     return (
-        playlistToRender.map((playlist) => (
+      playlistsToRender.map((playlist) => {
+        const playlistImage = _.get(playlist, 'image') || _.get(playlist, 'images[0].url');
+        return (
           <Grid item key={playlist.id} xs={12} sm={6} md={4}>
             <CardComponent
+              id={playlist.id}
               name={playlist.name}
-              image={playlist.images[0].url}
+              image={playlistImage}
               description={playlist.description}
+              onAddToSavedPlaylist={(playlistSelected) => {
+                setSavedPlaylists(savedPlaylists.concat(playlistSelected));
+                setSnackbarMessage(`Playlist ${_.get(playlistSelected, 'name')} saved`);
+              }}
             />
           </Grid>
-        ))
+        );
+      })
+    );
+  };
+
+  const renderSpotifyPlaylists = () => {
+    const hasSearchedPlaylists = _.size(searchedPlaylists) > 0;
+    const playlistsToRender = hasSearchedPlaylists ? searchedPlaylists : userPlaylists;
+    return (
+      <Container maxWidth="md" className="playlists">
+        <h1>{hasSearchedPlaylists ? 'Searched Playlists' : 'User playlists'}</h1>
+        <Grid container spacing={4}>
+          {renderPlaylists(playlistsToRender)}
+        </Grid>
+      </Container>
     );
   };
 
@@ -108,16 +132,20 @@ export default function App() {
             </div>
           </Container>
         </div>
-        <Container maxWidth="md" className="playlists">
-          {!isTokenExpired && (
-            <>
-              <h1>{_.size(searchedPlaylists) > 0 ? 'Searched Playlists' : 'User playlists'}</h1>
-              <Grid container spacing={4}>
-                  {renderPlaylists()}
-              </Grid>
-            </>
-          )}
-        </Container>
+        {!isTokenExpired && renderSpotifyPlaylists()}
+        {_.size(savedPlaylists) > 0 && (
+          <Container maxWidth="md" className="savedPlaylists">
+            <h1>Saved Playlists</h1>
+            <Grid container spacing={4}>
+              {renderPlaylists(savedPlaylists)}
+            </Grid>
+          </Container>
+        )}
+        <SnackbarComponent
+          open={!!snackbarMessage}
+          message={snackbarMessage}
+          onClose={() => setSnackbarMessage('')}
+        />
       </div>
       <Footer />
     </>

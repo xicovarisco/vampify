@@ -4,6 +4,7 @@ import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
+import _ from 'lodash';
 
 // Styles
 import './view.scss';
@@ -21,7 +22,11 @@ const CardComponent = (props) => {
                 <p>{description}</p>
             </CardContent>
             <CardActions>
-                <Button size="small" color="primary">
+                <Button
+                    size="small"
+                    color="primary"
+                    onClick={() => props.onAddToSavedPlaylist({ ..._.omit(props, ['onAddToSavedPlaylist']) })}
+                >
                     Add to playlist
                 </Button>
             </CardActions>
