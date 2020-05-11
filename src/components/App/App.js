@@ -13,6 +13,7 @@ import './App.scss';
 
 export default function App() {
   const [accessToken, setAccessToken] = useState();
+  const [isTokenExpired, setIsTokenExpired] = useState(false);
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [searchedPlaylists, setSearchedPlaylists] = useState([]);
   const spotify = new Spotify();
@@ -36,9 +37,12 @@ export default function App() {
 
     spotify.getUserPlaylists()
         .then((response) => {
-            if (response && response.items) {
-              setUserPlaylists(response.items);
-            }
+          if (response && response.items) {
+            setUserPlaylists(response.items);
+          }
+        })
+        .catch(() => {
+          setIsTokenExpired(true);
         });
   };
 
@@ -64,6 +68,7 @@ export default function App() {
   return (
     <>
       <Header
+        isDisabled={isTokenExpired}
         onSearchPlaylist={(value) => {
           if (value) {
             spotify.searchPlaylists(value, { limit: 5 })
@@ -87,25 +92,31 @@ export default function App() {
               Vampify allows you to easily search and add new playlists to your own Spotify account
             </h5>
             <div className="mtop30">
-              <Grid container spacing={2} justify="center">
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    href="http://localhost:8888/login"
-                  >
-                    Login to Spotify
-                  </Button>
+              {isTokenExpired && (
+                <Grid container spacing={2} justify="center">
+                  <Grid item>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      href="http://localhost:8888/login"
+                    >
+                      Login to Spotify
+                    </Button>
+                  </Grid>
                 </Grid>
-              </Grid>
+              )}
             </div>
           </Container>
         </div>
         <Container maxWidth="md" className="playlists">
-            <h1>{_.size(searchedPlaylists) > 0 ? 'Searched Playlists' : 'User playlists'}</h1>
-            <Grid container spacing={4}>
-                {renderPlaylists()}
-            </Grid>
+          {!isTokenExpired && (
+            <>
+              <h1>{_.size(searchedPlaylists) > 0 ? 'Searched Playlists' : 'User playlists'}</h1>
+              <Grid container spacing={4}>
+                  {renderPlaylists()}
+              </Grid>
+            </>
+          )}
         </Container>
       </div>
       <Footer />

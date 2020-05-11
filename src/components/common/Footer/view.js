@@ -9,11 +9,8 @@ import './view.scss';
 const Footer = () => {
     return (
         <footer>
-            <h6 className="flexCenter">
-                Footer
-            </h6>
             <p className="subtitle flexCenter">
-                Something here to give the footer a purpose!
+                Repo can be found <a href="https://github.com/xicovarisco/vampify" target="_blank" rel="noopener noreferrer">here</a>
             </p>
             <Copyright />
         </footer>

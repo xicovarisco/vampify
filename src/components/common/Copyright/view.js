@@ -1,8 +1,5 @@
 import React from 'react';
 
-// Styles
-import './view.scss';
-
 function Copyright() {
     const date = new Date().getFullYear();
     return (

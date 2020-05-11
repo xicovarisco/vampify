@@ -27,6 +27,7 @@ const Header = (props) => {
                             <SearchIcon style={{ color: '#6C2EFF' }} />
                         </div>
                         <InputBase
+                            disabled={props.isDisabled}
                             placeholder="Search…"
                             classes={{
                                 root: 'inputRoot',
